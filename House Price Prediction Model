@@ -1,0 +1,371 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# ## Kaggle Competition for House Prices: Advanced Regression Techniques 
+
+# In[1]:
+
+
+#importin necessary libraries
+import numpy as np
+import seaborn as sns
+import pandas as pd
+import matplotlib.pyplot as plt
+
+
+# In[2]:
+
+
+df=pd.read_csv('train_house.csv')
+
+
+# In[ ]:
+
+
+df.head()
+
+
+# In[3]:
+
+
+df['MSZoning'].value_counts()
+
+
+# In[ ]:
+
+
+sns.heatmap(df.isnull(),yticklabels=False,cbar=True)
+
+
+# In[ ]:
+
+
+df.shape
+
+
+# In[ ]:
+
+
+df.info()
+
+
+# In[4]:
+
+
+#We must take care of those missing values
+#fill them either with mode or mean(depend on datasets)
+df['LotFrontage']=df['LotFrontage'].fillna(df['LotFrontage'].mean())
+
+
+# In[5]:
+
+
+df.drop(['Alley'],axis=1,inplace=True)
+
+
+# In[6]:
+
+
+df['BsmtCond']=df['BsmtCond'].fillna(df['BsmtCond'].mode()[0])
+df['BsmtQual']=df['BsmtQual'].fillna(df['BsmtQual'].mode()[0])
+
+
+# In[7]:
+
+
+df['FireplaceQu']=df['FireplaceQu'].fillna(df['FireplaceQu'].mode()[0])
+df['GarageType']=df['GarageType'].fillna(df['GarageType'].mode()[0])
+
+
+# In[8]:
+
+
+df.drop(['GarageYrBlt'],axis=1,inplace=True)
+
+
+# In[9]:
+
+
+df['GarageFinish']=df['GarageFinish'].fillna(df['GarageFinish'].mode()[0])
+df['GarageQual']=df['GarageQual'].fillna(df['GarageQual'].mode()[0])
+df['GarageCond']=df['GarageCond'].fillna(df['GarageCond'].mode()[0])
+
+
+# In[10]:
+
+
+df.drop(['PoolQC','Fence','MiscFeature'],axis=1,inplace=True)
+
+
+# In[11]:
+
+
+df.shape
+
+
+# In[12]:
+
+
+df.drop(['Id'],axis=1,inplace=True)
+
+
+# In[13]:
+
+
+df.isnull().sum()
+
+
+# In[14]:
+
+
+df['MasVnrType']=df['MasVnrType'].fillna(df['MasVnrType'].mode()[0])
+df['MasVnrArea']=df['MasVnrArea'].fillna(df['MasVnrArea'].mode()[0])
+
+
+# In[15]:
+
+
+sns.heatmap(df.isnull(),yticklabels=False,cbar=False,cmap='viridis')
+
+
+# In[16]:
+
+
+df['BsmtExposure']=df['BsmtExposure'].fillna(df['BsmtExposure'].mode()[0])
+
+
+# In[ ]:
+
+
+sns.heatmap(df.isnull(),yticklabels=False,cbar=False,cmap='viridis')
+
+
+# In[17]:
+
+
+df['BsmtFinType2']=df['BsmtFinType2'].fillna(df['BsmtFinType2'].mode()[0])
+
+
+# In[18]:
+
+
+df.dropna(inplace=True)
+
+
+# In[19]:
+
+
+df.shape
+
+
+# In[ ]:
+
+
+#if we have categorical features,we should trap them through dummy variables
+
+
+# In[20]:
+
+
+columns=['MSZoning','Street','LotShape','LandContour','Utilities','LotConfig','LandSlope','Neighborhood',
+         'Condition2','BldgType','Condition1','HouseStyle','SaleType',
+        'SaleCondition','ExterCond',
+         'ExterQual','Foundation','BsmtQual','BsmtCond','BsmtExposure','BsmtFinType1','BsmtFinType2',
+        'RoofStyle','RoofMatl','Exterior1st','Exterior2nd','MasVnrType','Heating','HeatingQC',
+         'CentralAir',
+         'Electrical','KitchenQual','Functional',
+         'FireplaceQu','GarageType','GarageFinish','GarageQual','GarageCond','PavedDrive']
+
+
+# In[21]:
+
+
+len(columns)
+
+
+# In[22]:
+
+
+def category_onehot_multcols(multcolumns):
+    df_final=final_df
+    i=0
+    for fields in multcolumns:
+        
+        print(fields)
+        df1=pd.get_dummies(final_df[fields],drop_first=True)
+        
+        final_df.drop([fields],axis=1,inplace=True)
+        if i==0:
+            df_final=df1.copy()
+        else:
+            
+            df_final=pd.concat([df_final,df1],axis=1)
+        i=i+1
+       
+    df_final=pd.concat([final_df,df_final],axis=1)
+        
+    return df_final
+
+
+# In[23]:
+
+
+main_df=df.copy()
+
+
+# In[27]:
+
+
+#merget both data because we have two datasets
+
+test_df=pd.read_csv('formulatedtest.csv')
+
+
+# In[28]:
+
+
+test_df.shape
+
+
+# In[30]:
+
+
+test_df.head()
+
+
+# In[31]:
+
+
+final_df=pd.concat([df,test_df],axis=0)
+
+
+# In[32]:
+
+
+final_df['SalePrice']
+
+
+# In[33]:
+
+
+final_df.shape
+
+
+# In[34]:
+
+
+final_df=category_onehot_multcols(columns)
+
+
+# In[35]:
+
+
+final_df.shape
+
+
+# In[37]:
+
+
+final_df =final_df.loc[:,~final_df.columns.duplicated()]
+
+
+# In[38]:
+
+
+final_df.shape
+
+
+# In[39]:
+
+
+final_df
+
+
+# In[40]:
+
+
+df_Train=final_df.iloc[:1422,:]
+df_Test=final_df.iloc[1422:,:]
+
+
+# In[41]:
+
+
+df_Train.head()
+
+
+# In[42]:
+
+
+df_Test.head()
+
+
+# In[43]:
+
+
+df_Train.shape
+
+
+# In[ ]:
+
+
+df_Train.describe()
+
+
+# In[ ]:
+
+
+
+
+
+# In[44]:
+
+
+df_Test.drop(['SalePrice'],axis=1,inplace=True)
+
+
+# In[45]:
+
+
+X_train=df_Train.drop(['SalePrice'],axis=1)
+y_train=df_Train['SalePrice']
+
+
+# ## Prediciton and selecting the Algorithm
+
+# In[46]:
+
+
+import xgboost
+classifier=xgboost.XGBRegressor()
+classifier.fit(X_train,y_train)
+
+
+# In[47]:
+
+
+import pickle
+filename='finalhousemodel.pkl'
+pickle.dump(classifier,open(filename,'wb'))
+
+
+# In[48]:
+
+
+y_pred=classifier.predict(df_Test)
+
+
+# In[49]:
+
+
+y_pred
+
+
+# In[53]:
+
+
+pred=pd.DataFrame(y_pred)
+sub_df=pd.read_csv('sample_submission_house.csv')
+datasets=pd.concat([sub_df['Id'],pred],axis=1)
+datasets.columns=['Id','SalePrice']
+datasets.to_csv('sample_submission_house_pred.csv',index=False)
